@@ -29,33 +29,70 @@ const divide = (a, b) => {
 	return a / b;
 };
 
-buttons.forEach((btn) => {
-	btn.addEventListener("click", () => {
-		if (btn.id === "reset") {
-			display.textContent = 0;
-			firstNumber = null;
-			secondNumber = null;
-			operator = null;
-			return;
+const handleDisplay = () => {
+	const display = document.querySelector("#display");
+
+	if (!operator) {
+		display.textContent = firstNumber;
+	} else if (operator) {
+		display.textContent = secondNumber;
+	} else if (operator && secondNumber) {
+		display.textContent = result;
+	}
+
+	if (firstNumber === null) {
+		display.textContent = "0";
+	}
+};
+
+const handleNumber = (num) => {
+	if (!operator) {
+		if (firstNumber === null) {
+			firstNumber = "";
 		}
-		if (!firstNumber && display.textContent == 0) {
-			display.textContent = btn.value;
-		} else if (!firstNumber && display.textContent != 0) {
+		firstNumber += num;
+	} else {
+		if (secondNumber === null) {
+			secondNumber = "";
+		}
+		secondNumber += num;
+	}
+};
+
+const handleOperator = (operatorValue) => {
+	operator = operatorValue;
+};
+
+const handleClearDisplay = () => {
+	firstNumber = null;
+	secondNumber = null;
+	operator = null;
+	handleDisplay();
+};
+
+const handleClick = () => {
+	buttons.forEach((btn) => {
+		btn.addEventListener("click", () => {
+			if (btn.className.includes("number") && btn.id !== "comma" && btn.id !== "sign") {
+				handleNumber(btn.value);
+				handleDisplay();
+			}
 			if (btn.className.includes("operator")) {
-				operator = btn.value;
-				firstNumber = display.textContent;
+				handleOperator(btn.value);
 			}
-			!firstNumber && !operator ? (display.textContent += btn.value) : (display.textContent = firstNumber);
-		} else {
-			if (btn.value === "=") {
-				secondNumber = display.textContent;
-				operate(operator, +firstNumber, +secondNumber);
+
+			if (btn.id === "equal") {
+				operate(operator, Number(firstNumber), Number(secondNumber));
 			}
-			display.textContent = "";
-			btn.value !== "=" ? (display.textContent += btn.value) : (display.textContent = result);
-		}
+
+			if (btn.id === "reset") {
+				handleClearDisplay();
+			}
+		});
 	});
-});
+};
+
+handleClick();
 
 const operate = (operator, a, b) => {
 	const { ADD, SUBTRACT, MULTIPLY, DIVIDE } = OPERATORS;
