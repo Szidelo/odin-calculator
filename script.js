@@ -46,13 +46,16 @@ const handleDisplay = () => {
 };
 
 const handleNumber = (num) => {
+	if (result) {
+		firstNumber = result;
+	}
 	if (!operator) {
 		if (firstNumber === null) {
 			firstNumber = "";
 		}
 		firstNumber += num;
 	} else {
-		if (secondNumber === null) {
+		if (secondNumber === null || result) {
 			secondNumber = "";
 		}
 		secondNumber += num;
@@ -60,31 +63,44 @@ const handleNumber = (num) => {
 };
 
 const handleOperator = (operatorValue) => {
-	operator = operatorValue;
+	if (!operator) {
+		operator = operatorValue;
+	}
+	// operate the existing numbers and sets the first number to result if user click an operator instead of equal when first number and second number have a value
+	if (operator && secondNumber) {
+		operate(operator, Number(firstNumber), Number(secondNumber));
+		firstNumber = result;
+		operator = operatorValue;
+	}
 };
 
 const handleClearDisplay = () => {
 	firstNumber = null;
 	secondNumber = null;
 	operator = null;
+	result = 0;
 	handleDisplay();
 };
 
 const handleClick = () => {
 	buttons.forEach((btn) => {
 		btn.addEventListener("click", () => {
+			// display and update number to operate when click on numbers
 			if (btn.className.includes("number") && btn.id !== "comma" && btn.id !== "sign") {
 				handleNumber(btn.value);
 				handleDisplay();
 			}
+			// sets the operator or calculate existing numbers if there are values on first number and second number
 			if (btn.className.includes("operator")) {
 				handleOperator(btn.value);
 			}
 
+			// calculate values
 			if (btn.id === "equal") {
 				operate(operator, Number(firstNumber), Number(secondNumber));
 			}
 
+			// reset values
 			if (btn.id === "reset") {
 				handleClearDisplay();
 			}
@@ -93,6 +109,18 @@ const handleClick = () => {
 };
 
 handleClick();
+
+const handleNumberOfCharacters = (value) => {
+	const width = window.innerWidth;
+	// TODO: update function to trim the length of the result depending on the window width
+	if (value.toString().length > 9) {
+		let newValue = value.toString().substring(0, 9);
+		return Number(newValue);
+	} else {
+		console.log(value);
+		return value;
+	}
+};
 
 const operate = (operator, a, b) => {
 	const { ADD, SUBTRACT, MULTIPLY, DIVIDE } = OPERATORS;
@@ -112,5 +140,5 @@ const operate = (operator, a, b) => {
 			break;
 	}
 
-	display.textContent = result;
+	display.textContent = handleNumberOfCharacters(result);
 };
