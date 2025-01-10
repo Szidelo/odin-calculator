@@ -11,6 +11,7 @@ const buttons = document.querySelectorAll(".btn");
 let firstNumber = null;
 let secondNumber = null;
 let operator = null;
+let chainedNr = null;
 let result = 0;
 
 const add = (a, b) => {
@@ -46,31 +47,27 @@ const handleDisplay = () => {
 };
 
 const handleNumber = (num) => {
-	if (result) {
-		firstNumber = result;
-	}
+	// create first number if there is no operator
 	if (!operator) {
-		if (firstNumber === null) {
-			firstNumber = "";
-		}
+		if (firstNumber === null) firstNumber = "";
 		firstNumber += num;
 	} else {
-		if (secondNumber === null || result) {
-			secondNumber = "";
-		}
+		// create second number if operator exist
+		if (secondNumber === null) secondNumber = "";
 		secondNumber += num;
 	}
 };
 
 const handleOperator = (operatorValue) => {
+	// set the operator if it is the first time
 	if (!operator) {
 		operator = operatorValue;
-	}
-	// operate the existing numbers and sets the first number to result if user click an operator instead of equal when first number and second number have a value
-	if (operator && secondNumber) {
+		// check if operator and second number exist
+	} else if (operator && secondNumber !== null) {
 		operate(operator, Number(firstNumber), Number(secondNumber));
-		firstNumber = result;
-		operator = operatorValue;
+		firstNumber = result.toString(); // set result as the first number
+		secondNumber = null; // reset second number for chaining
+		operator = operatorValue; // update the operator
 	}
 };
 
@@ -80,6 +77,16 @@ const handleClearDisplay = () => {
 	operator = null;
 	result = 0;
 	handleDisplay();
+};
+
+const handleComma = () => {
+	if (firstNumber.includes(".") && !secondNumber) {
+		return;
+	} else if (!firstNumber.includes(".")) {
+		firstNumber += ".";
+	} else if (firstNumber && !secondNumber.includes(".")) {
+		secondNumber += ".";
+	}
 };
 
 const handleClick = () => {
@@ -104,6 +111,11 @@ const handleClick = () => {
 			if (btn.id === "reset") {
 				handleClearDisplay();
 			}
+
+			if (btn.id === "comma") {
+				handleComma();
+				handleDisplay();
+			}
 		});
 	});
 };
@@ -117,7 +129,6 @@ const handleNumberOfCharacters = (value) => {
 		let newValue = value.toString().substring(0, 9);
 		return Number(newValue);
 	} else {
-		console.log(value);
 		return value;
 	}
 };
@@ -136,9 +147,10 @@ const operate = (operator, a, b) => {
 			result = multiply(a, b);
 			break;
 		case DIVIDE:
-			result = divide(a, b);
+			result = b !== 0 ? divide(a, b) : "Error";
 			break;
 	}
 
-	display.textContent = handleNumberOfCharacters(result);
+	result = handleNumberOfCharacters(result);
+	display.textContent = result;
 };
