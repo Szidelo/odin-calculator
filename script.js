@@ -41,14 +41,14 @@ const handleDisplay = () => {
 		display.textContent = result;
 	}
 
-	if (firstNumber === null) {
+	if (firstNumber === null || display.textContent === "") {
 		display.textContent = "0";
 	}
 };
 
 const handleNumber = (num) => {
-	// create first number if there is no operator
 	if (!operator) {
+		// create first number if there is no operator
 		if (firstNumber === null) firstNumber = "";
 		firstNumber += num;
 	} else {
@@ -59,15 +59,17 @@ const handleNumber = (num) => {
 };
 
 const handleOperator = (operatorValue) => {
-	// set the operator if it is the first time
 	if (!operator) {
+		// set the operator if it is the first time
 		operator = operatorValue;
-		// check if operator and second number exist
 	} else if (operator && secondNumber !== null) {
+		// check if operator and second number exist
 		operate(operator, Number(firstNumber), Number(secondNumber));
 		firstNumber = result.toString(); // set result as the first number
 		secondNumber = null; // reset second number for chaining
 		operator = operatorValue; // update the operator
+	} else if (operator) {
+		operator = operatorValue;
 	}
 };
 
@@ -86,6 +88,21 @@ const handleComma = () => {
 		firstNumber += ".";
 	} else if (firstNumber && !secondNumber.includes(".")) {
 		secondNumber += ".";
+	}
+};
+
+const handleDelete = () => {
+	if (operator && secondNumber) {
+		secondNumber = secondNumber.slice(0, -1);
+	} else if (!operator && firstNumber) {
+		firstNumber = firstNumber.slice(0, -1);
+	} else if (result) {
+		return;
+	} else if (!firstNumber && !secondNumber && !result) {
+		console.log("reset display to 0");
+
+		const display = document.querySelector("#display");
+		display.textContent = "0";
 	}
 };
 
@@ -112,8 +129,16 @@ const handleClick = () => {
 				handleClearDisplay();
 			}
 
+			// create floating numbers
 			if (btn.id === "comma") {
 				handleComma();
+				handleDisplay();
+			}
+
+			if (btn.id === "delete") {
+				console.log("delete");
+
+				handleDelete();
 				handleDisplay();
 			}
 		});
