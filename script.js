@@ -36,7 +36,7 @@ const updateDisplay = () => {
 	const display = document.querySelector("#display");
 
 	if (!operator) {
-		display.textContent = firstNumber;
+		display.textContent = handleNumberOfCharacters(firstNumber);
 	} else if (operator && !result) {
 		display.textContent = secondNumber;
 	} else if (operator && secondNumber) {
@@ -55,16 +55,16 @@ const handleNumber = (num) => {
 		isFirstNumberDisplayed = true;
 		isSecondNumberDisplayed = false;
 		firstNumber += num;
+		firstNumber = handleNumberOfCharacters(firstNumber); // set max number if digits for the firstNumber
 	} else {
-		if (firstNumber === null) {
-			// set first number to 0 if the operator is set before first number
-			firstNumber = "0";
-		}
+		// set first number to 0 if the operator is set before first number
+		if (firstNumber === null) firstNumber = "0";
 		// create second number if operator exist
 		if (secondNumber === null) secondNumber = "";
 		secondNumber += num;
 		isFirstNumberDisplayed = false;
 		isSecondNumberDisplayed = true;
+		secondNumber = handleNumberOfCharacters(secondNumber); // set max number if digits for the secondNumber
 	}
 };
 
@@ -143,11 +143,13 @@ const handlePercent = () => {
 	if (isFirstNumberDisplayed) {
 		// if first number is displayed calculate its percentage
 		firstNumber = (Number(firstNumber) * 0.01).toString();
+		firstNumber = handleNumberOfCharacters(firstNumber);
 	}
 
 	if (isSecondNumberDisplayed) {
 		// If second number is displayed calculate the second number percentage of the first number
 		secondNumber = ((Number(firstNumber) * Number(secondNumber)) / 100).toString();
+		secondNumber = handleNumberOfCharacters(secondNumber);
 	}
 };
 
@@ -180,7 +182,7 @@ const handleClick = () => {
 				updateDisplay();
 			}
 
-			// remove last caracter from the input
+			// remove last character from the input
 			if (btn.id === "delete") {
 				handleDelete();
 				updateDisplay();
@@ -204,14 +206,15 @@ const handleClick = () => {
 handleClick();
 
 const handleNumberOfCharacters = (value) => {
-	const width = window.innerWidth;
-	// TODO: update function to trim the length of the result depending on the window width
-	if (value.toString().length > 9) {
-		let newValue = value.toString().substring(0, 9);
-		return Number(newValue);
-	} else {
-		return value;
+	const displayWidth = display.offsetWidth;
+	const fontWidthInPixels = 20;
+	const maxCharacters = Math.floor((displayWidth / fontWidthInPixels) * 0.7); // max characters based on display width
+
+	if (value && value.toString().length > maxCharacters) {
+		value = value.toString().substring(0, maxCharacters);
 	}
+
+	return value;
 };
 
 const operate = (operator, a, b) => {
@@ -232,6 +235,8 @@ const operate = (operator, a, b) => {
 			break;
 	}
 
-	result = handleNumberOfCharacters(result);
+	if (result !== "Error") {
+		result = handleNumberOfCharacters(result);
+	}
 	display.textContent = result;
 };
